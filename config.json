@@ -1,0 +1,35 @@
+{
+  "cooldown_hours": 24,
+  "prizes": [
+    {
+      "name": "Игровой предмет",
+      "color": "#1555ff",
+      "weight": 1
+    },
+    {
+      "name": "Заказать музыку",
+      "color": "#ef16ff",
+      "weight": 1
+    },
+    {
+      "name": "Секретный приз",
+      "color": "#7b16ff",
+      "weight": 1
+    },
+    {
+      "name": "Бонусный приз",
+      "color": "#ff246f",
+      "weight": 1
+    },
+    {
+      "name": "Игровая награда",
+      "color": "#3626ff",
+      "weight": 1
+    },
+    {
+      "name": "Сюрприз",
+      "color": "#d600ff",
+      "weight": 1
+    }
+  ]
+}
