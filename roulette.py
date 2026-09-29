@@ -4,8 +4,11 @@ from PySide6.QtCore import Qt, QRectF, QPointF, QPropertyAnimation, QEasingCurve
 from PySide6.QtGui import QPainter, QColor, QPen, QBrush, QFont, QRadialGradient, QLinearGradient
 from PySide6.QtWidgets import QApplication, QWidget, QMessageBox
 
-ROOT=Path(__file__).parent
+ROOT=Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
 CFG=ROOT/"config.json"; STATE=ROOT/"state.json"
+
+DEFAULT={"cooldown_hours":24,"prizes":[{"name":"Игровой предмет","color":"#1555ff","weight":1},{"name":"Заказать музыку","color":"#ef16ff","weight":1},{"name":"Секретный приз","color":"#7b16ff","weight":1},{"name":"Бонусный приз","color":"#ff246f","weight":1},{"name":"Игровая награда","color":"#3626ff","weight":1},{"name":"Сюрприз","color":"#d600ff","weight":1}]}
+
 
 def load(path, default):
     try: return json.loads(path.read_text(encoding="utf-8"))
@@ -24,13 +27,13 @@ class Model(QObject):
 class Roulette(QWidget):
     def __init__(self):
         super().__init__()
-        self.cfg=load(CFG,{"cooldown_hours":24,"prizes":[]})
-        self.prizes=self.cfg.get("prizes",[])
+        self.cfg=load(CFG,DEFAULT)
+        self.prizes=self.cfg.get("prizes") or DEFAULT["prizes"]
         self.state=load(STATE,{"last_spin":0})
         self.model=Model(); self.model.changed.connect(self.update)
         self.anim=None; self.busy=False; self.selected=None
         self.setWindowTitle("Perfect World — Колесо Фортуны")
-        self.resize(1600,900); self.setMinimumSize(1100,700)
+        self.resize(1600,900); self.setMinimumSize(1200,700)
         self.button=QRectF()
 
     def remaining(self):
@@ -67,19 +70,19 @@ class Roulette(QWidget):
     def paintEvent(self,e):
         p=QPainter(self); p.setRenderHint(QPainter.Antialiasing)
         self.background(p)
-        cx=self.width()*.61; cy=self.height()*.51; r=min(self.height()*.36,self.width()*.30)
+        cx=self.width()*.66; cy=self.height()*.46; r=min(self.height()*.39,self.width()*.34)
         self.info(p)
         self.wheel(p,QPointF(cx,cy),r)
         self.pointer(p,cx,cy-r-8)
-        bw=min(430,self.width()*.29); self.button=QRectF(cx-bw/2,cy+r*.82,bw,78); self.draw_button(p,self.button)
+        bw=min(460,self.width()*.31); self.button=QRectF(cx-bw/2,cy+r*.82,bw,82); self.draw_button(p,self.button)
         left=self.remaining()
         txt="КРУТКА ДОСТУПНА" if not left else f"СЛЕДУЮЩАЯ КРУТКА  {int(left//3600):02d}:{int(left%3600//60):02d}:{int(left%60):02d}"
         p.setPen(QColor("#ffd9ff")); p.setFont(QFont("Arial",14,QFont.Bold))
-        p.drawText(QRectF(cx-260,cy+r*.97,520,30),Qt.AlignCenter,txt); p.end()
+        p.drawText(QRectF(cx-280,cy+r*.99,560,30),Qt.AlignCenter,txt); p.end()
 
     def background(self,p):
         g=QLinearGradient(0,0,self.width(),self.height()); g.setColorAt(0,QColor("#100020")); g.setColorAt(.5,QColor("#28004f")); g.setColorAt(1,QColor("#07000f")); p.fillRect(self.rect(),QBrush(g))
-        for i in range(26):
+        for i in range(34):
             x=(i*137)%self.width(); y=(i*83)%self.height(); p.setPen(Qt.NoPen); p.setBrush(QColor(220,70,255,45)); p.drawEllipse(QPointF(x,y),3+(i%5),3+(i%5))
         p.setPen(QPen(QColor(185,52,255,90),2))
         for x in range(0,self.width(),140):
@@ -91,7 +94,7 @@ class Roulette(QWidget):
         p.drawText(51,102,"КОЛЕСО ФОРТУНЫ  •  PERFECT WORLD")
 
     def info(self,p):
-        x,y,w,h=40,145,350,405; r=QRectF(x,y,w,h)
+        x,y,w,h=38,150,370,415; r=QRectF(x,y,w,h)
         p.setBrush(QColor(8,2,24,220)); p.setPen(QPen(QColor("#cf4cff"),2)); p.drawRoundedRect(r,18,18)
         p.setPen(QColor("#f0baff")); p.setFont(QFont("Arial",19,QFont.Bold)); p.drawText(x+24,y+38,"КАК УЧАСТВОВАТЬ?")
         lines=["▶  Подпишись на канал","💬  Напиши комментарий","❤  Поставь лайк","","🎁  Одна крутка каждые 24 часа","✨  Приз определяется случайно"]
