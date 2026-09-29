@@ -26,7 +26,7 @@ jobs:
 
       - name: Build EXE
         run: |
-          pyinstaller --noconfirm --clean --onefile --windowed --name PerfectWorldRoulette roulette.py
+          pyinstaller --noconfirm --clean --onefile --windowed --name PerfectWorldRoulette --add-data "roulette_background.jpg;." --add-data "wheel_layer.webp;." roulette.py
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
