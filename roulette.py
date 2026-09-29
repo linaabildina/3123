@@ -1,6 +1,6 @@
 import sys, random, math
 from pathlib import Path
-from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPointF
+from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPointF, Signal, Property
 from PySide6.QtGui import QPainter, QPixmap, QTransform, QColor, QPen, QBrush, QFont
 from PySide6.QtWidgets import QApplication, QWidget, QMessageBox
 
@@ -16,6 +16,7 @@ PRIZES = [
 ]
 
 class Roulette(QWidget):
+    angleChanged = Signal()
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Perfect World — Колесо Фортуны")
@@ -95,9 +96,10 @@ class Roulette(QWidget):
 
     def set_angle(self, value):
         self.angle = float(value)
+        self.angleChanged.emit()
         self.update()
 
-    roulette_angle = property(get_angle, set_angle)
+    roulette_angle = Property(float, get_angle, set_angle, notify=angleChanged)
 
     def finish(self, winner):
         self.busy = False
