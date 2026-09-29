@@ -65,44 +65,82 @@ class Roulette(QWidget):
     def paintEvent(self,e):
         p=QPainter(self); p.setRenderHint(QPainter.Antialiasing)
         self.background(p)
-        cx=self.width()*.66; cy=self.height()*.46; r=min(self.height()*.39,self.width()*.34)
+        cx=self.width()*.54; cy=self.height()*.53; r=min(self.height()*.36,self.width()*.27)
         self.info(p)
         self.wheel(p,QPointF(cx,cy),r)
         self.pointer(p,cx,cy-r-8)
-        bw=min(460,self.width()*.31); self.button=QRectF(cx-bw/2,cy+r*.82,bw,82); self.draw_button(p,self.button)
+        bw=min(470,self.width()*.30); self.button=QRectF(cx-bw/2,cy+r*.86,bw,82); self.draw_button(p,self.button)
         left=self.remaining()
         txt="КРУТКА ДОСТУПНА" if not left else f"СЛЕДУЮЩАЯ КРУТКА  {int(left//3600):02d}:{int(left%3600//60):02d}:{int(left%60):02d}"
         p.setPen(QColor("#ffd9ff")); p.setFont(QFont("Arial",14,QFont.Bold))
         p.drawText(QRectF(cx-280,cy+r*.99,560,30),Qt.AlignCenter,txt); p.end()
 
     def background(self,p):
-        g=QLinearGradient(0,0,self.width(),self.height())
-        g.setColorAt(0,QColor("#120019")); g.setColorAt(.45,QColor("#3b0069")); g.setColorAt(1,QColor("#08000f"))
+        w,h=self.width(),self.height()
+        # Deep fantasy night gradient
+        g=QLinearGradient(0,0,0,h)
+        g.setColorAt(0,QColor("#13002b")); g.setColorAt(.42,QColor("#26004d")); g.setColorAt(1,QColor("#080012"))
         p.fillRect(self.rect(),QBrush(g))
+        # Large moon
+        p.setPen(Qt.NoPen); p.setBrush(QColor(235,205,255,220))
+        p.drawEllipse(QPointF(w*.64,h*.14),h*.105,h*.105)
+        p.setBrush(QColor(100,25,160,70))
+        for dx,dy,rr in [(-22,-10,12),(18,14,9),(30,-22,7),(-28,20,8)]:
+            p.drawEllipse(QPointF(w*.64+dx,h*.14+dy),rr,rr)
+        # distant mountains / waterfalls
+        p.setBrush(QColor(34,9,65,230))
+        p.drawPolygon([QPointF(0,h*.38),QPointF(w*.13,h*.18),QPointF(w*.25,h*.39),
+                       QPointF(w*.39,h*.17),QPointF(w*.53,h*.38),QPointF(w*.67,h*.19),
+                       QPointF(w*.83,h*.39),QPointF(w,h*.21),QPointF(w,h),QPointF(0,h)])
+        p.setPen(QPen(QColor(177,73,255,75),4))
+        for x in [w*.12,w*.27,w*.43,w*.73,w*.88]:
+            p.drawLine(x,h*.33,x-8,h*.55)
+            p.drawLine(x-8,h*.55,x+3,h*.69)
+        # Pagodas across the horizon
+        def pagoda(x,base,scale):
+            p.setPen(QPen(QColor("#7d28bb"),2))
+            p.setBrush(QColor(18,3,37,235))
+            bw=48*scale
+            p.drawRect(QRectF(x-bw*.16,base-70*scale,bw*.32,70*scale))
+            for j in range(4):
+                yy=base-(18+j*16)*scale
+                ww=bw*(.72-.10*j)
+                p.drawPolygon([QPointF(x-ww,yy),QPointF(x+ww,yy),
+                               QPointF(x+ww*.55,yy-7*scale),QPointF(x-ww*.55,yy-7*scale)])
+            p.drawLine(x,base-76*scale,x,base-95*scale)
+        for x,sc in [(w*.08,.8),(w*.22,.55),(w*.38,.75),(w*.55,.55),(w*.73,.85),(w*.9,.65)]:
+            pagoda(x,h*.50,sc)
+        # Sakura branches
+        p.setPen(QPen(QColor(95,26,94,220),9))
+        p.drawLine(0,0,w*.22,h*.25); p.drawLine(w*.02,h*.08,w*.18,h*.03)
         p.setPen(Qt.NoPen)
-        for i in range(70):
-            x=(i*97+41)%self.width(); y=(i*53+17)%self.height()
-            s=2+(i%7)
-            p.setBrush(QColor(255,70+(i%3)*35,240,65+(i%4)*25))
-            p.drawEllipse(QPointF(x,y),s,s*.65)
-        p.setPen(QPen(QColor(160,50,255,55),2))
-        for x in range(20,self.width(),105):
-            base=self.height()-70
-            p.drawLine(x,base,x,base-80-(x%90))
-            p.drawLine(x-22,base-70,x+22,base-70)
-            p.drawLine(x-16,base-48,x+16,base-48)
-        p.setPen(QColor("#ff3dff")); p.setFont(QFont("Arial",42,QFont.Bold))
-        p.drawText(55,67,"● LIVE")
-        p.setPen(QColor("#ff20ff")); p.setFont(QFont("Arial",42,QFont.Bold))
-        p.drawText(55,112,"K4MUI")
+        for i in range(115):
+            x=(i*83+31)%w; y=(i*47+13)%(int(h*.72))
+            r=2+(i%6)
+            p.setBrush(QColor(255,60+(i%4)*30,230,80+(i%4)*35))
+            p.drawEllipse(QPointF(x,y),r,r*.65)
+        # Right-side fantasy character silhouette/hair glow
+        p.setPen(Qt.NoPen)
+        p.setBrush(QColor(202,116,255,45))
+        p.drawEllipse(QPointF(w*.86,h*.42),w*.16,h*.29)
+        p.setBrush(QColor(245,178,255,95))
+        p.drawEllipse(QPointF(w*.83,h*.27),w*.075,h*.105)
+        p.setBrush(QColor(76,21,112,180))
+        p.drawPolygon([QPointF(w*.78,h*.36),QPointF(w*.94,h*.36),QPointF(w*.98,h*.88),
+                       QPointF(w*.75,h*.88)])
+        # top-left branding
+        p.setPen(QColor("#ff37ff")); p.setFont(QFont("Arial",30,QFont.Bold))
+        p.drawText(48,50,"● LIVE")
+        p.setPen(QColor("#f02cff")); p.setFont(QFont("Arial",42,QFont.Bold))
+        p.drawText(52,100,"K4MUI")
         p.setPen(QColor("#ffffff")); p.setFont(QFont("Arial",42,QFont.Bold))
-        p.drawText(235,112,"PLAY")
-        p.setPen(QColor("#ffffff")); p.setFont(QFont("Arial",29,QFont.Bold))
-        p.drawText(55,160,"РОЗЫГРЫШ")
+        p.drawText(238,100,"PLAY")
+        p.setPen(QColor("#ffffff")); p.setFont(QFont("Arial",28,QFont.Bold))
+        p.drawText(55,142,"РОЗЫГРЫШ")
         p.setPen(QColor("#f4a7ff")); p.setFont(QFont("Arial",17,QFont.Bold))
-        p.drawText(58,188,"КОЛЕСО ФОРТУНЫ")
+        p.drawText(58,169,"КОЛЕСО ФОРТУНЫ")
     def info(self,p):
-        x,y,w,h=45,215,365,500; r=QRectF(x,y,w,h)
+        x,y,w,h=45,205,365,500; r=QRectF(x,y,w,h)
         p.setBrush(QColor(8,2,24,225)); p.setPen(QPen(QColor("#d33dff"),2)); p.drawRoundedRect(r,14,14)
         p.setPen(QColor("#f2b5ff")); p.setFont(QFont("Arial",18,QFont.Bold)); p.drawText(x+25,y+36,"КАК УЧАСТВОВАТЬ?")
         lines=[("▶","Подпишись на канал"),("●","Напиши комментарий"),("♥","Поставь лайк")]
@@ -134,8 +172,8 @@ class Roulette(QWidget):
             p.drawPie(rect,int((90-start-span)*16),int(span*16))
             a=math.radians(90-(start+span/2)); tx=c.x()+math.cos(a)*r*.58; ty=c.y()-math.sin(a)*r*.58
             p.save(); p.translate(tx,ty); p.rotate(-(start+span/2))
-            p.setPen(QColor("#ffffff")); p.setFont(QFont("Arial",18,QFont.Bold))
-            p.drawText(QRectF(-r*.24,-r*.13,r*.48,r*.26),Qt.AlignCenter|Qt.TextWordWrap,labels[i])
+            p.setPen(QColor("#ffffff")); p.setFont(QFont("Arial",max(13,int(r*.045)),QFont.Bold))
+            p.drawText(QRectF(-r*.25,-r*.14,r*.50,r*.28),Qt.AlignCenter|Qt.TextWordWrap,labels[i])
             p.restore()
         p.setBrush(QColor("#ff42ff")); p.setPen(QPen(QColor("#fff"),2))
         for a in [45,135,225,315]:
