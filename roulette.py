@@ -81,7 +81,7 @@ class Roulette(QWidget):
         g=QLinearGradient(0,0,self.width(),self.height()); g.setColorAt(0,QColor("#100020")); g.setColorAt(.5,QColor("#28004f")); g.setColorAt(1,QColor("#07000f")); p.fillRect(self.rect(),QBrush(g))
         for i in range(26):
             x=(i*137)%self.width(); y=(i*83)%self.height(); p.setPen(Qt.NoPen); p.setBrush(QColor(220,70,255,45)); p.drawEllipse(QPointF(x,y),3+(i%5),3+(i%5))
-        p.setPen(QPen(QColor("#b934ff",90),2))
+        p.setPen(QPen(QColor(185,52,255,90),2))
         for x in range(0,self.width(),140):
             p.drawLine(x,self.height(),x-120,self.height()*.65)
         # title
