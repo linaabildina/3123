@@ -24,6 +24,16 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      - name: Generate missing artwork
+        run: |
+          python generate_assets.py
+
+      - name: Verify assets
+        shell: pwsh
+        run: |
+          if (!(Test-Path "roulette_background.jpg")) { throw "roulette_background.jpg was not generated" }
+          if (!(Test-Path "wheel_layer.webp")) { throw "wheel_layer.webp was not generated" }
+
       - name: Build EXE
         run: |
           pyinstaller --noconfirm --clean --onefile --windowed --name PerfectWorldRoulette --add-data "roulette_background.jpg;." --add-data "wheel_layer.webp;." roulette.py
