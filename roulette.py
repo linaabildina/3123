@@ -1,10 +1,16 @@
-import sys, random, math
+import sys, random
 from pathlib import Path
-from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPointF, Signal, Property
-from PySide6.QtGui import QPainter, QPixmap, QTransform, QColor, QPen, QBrush, QFont
+from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, Signal, Property
+from PySide6.QtGui import QPainter, QPixmap, QTransform, QColor
 from PySide6.QtWidgets import QApplication, QWidget, QMessageBox
 
-ROOT = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
+# In a PyInstaller one-file build, --add-data files are extracted to sys._MEIPASS.
+# When running from source, keep using the folder containing roulette.py.
+if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+    ROOT = Path(sys._MEIPASS)
+else:
+    ROOT = Path(__file__).resolve().parent
+
 BG = ROOT / "roulette_background.jpg"
 WHEEL = ROOT / "wheel_layer.webp"
 
@@ -15,8 +21,10 @@ PRIZES = [
     "Секретный приз",
 ]
 
+
 class Roulette(QWidget):
     angleChanged = Signal()
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Perfect World — Колесо Фортуны")
@@ -33,50 +41,72 @@ class Roulette(QWidget):
     def fit_background(self, pixmap):
         if pixmap.isNull():
             return QPixmap()
-        return pixmap.scaled(self.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        return pixmap.scaled(
+            self.size(),
+            Qt.KeepAspectRatioByExpanding,
+            Qt.SmoothTransformation,
+        )
 
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
+
         bg = self.fit_background(self.bg)
         if not bg.isNull():
-            p.drawPixmap((self.width()-bg.width())//2, (self.height()-bg.height())//2, bg)
+            p.drawPixmap(
+                (self.width() - bg.width()) // 2,
+                (self.height() - bg.height()) // 2,
+                bg,
+            )
         else:
             p.fillRect(self.rect(), QColor("#12001f"))
 
-        # The artwork already contains the complete UI. We only replace the wheel circle
-        # with a transparent copy that can rotate independently.
         if not self.wheel.isNull():
             size = int(min(self.height() * 0.61, self.width() * 0.40))
-            wheel = self.wheel.scaled(size, size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            rotated = wheel.transformed(QTransform().rotate(self.angle), Qt.SmoothTransformation)
+            wheel = self.wheel.scaled(
+                size,
+                size,
+                Qt.KeepAspectRatio,
+                Qt.SmoothTransformation,
+            )
+            rotated = wheel.transformed(
+                QTransform().rotate(self.angle),
+                Qt.SmoothTransformation,
+            )
             cx = self.width() * 0.494
             cy = self.height() * 0.505
-            p.drawPixmap(int(cx-rotated.width()/2), int(cy-rotated.height()/2), rotated)
+            p.drawPixmap(
+                int(cx - rotated.width() / 2),
+                int(cy - rotated.height() / 2),
+                rotated,
+            )
 
-        # Invisible click zone exactly over the artwork's "КРУТИТЬ" button.
+        # Invisible click zone over the artwork's "КРУТИТЬ" button.
         bw = self.width() * 0.30
         bh = self.height() * 0.10
         cx = self.width() * 0.495
         cy = self.height() * 0.865
-        self.button_rect = (cx-bw/2, cy-bh/2, bw, bh)
+        self.button_rect = (cx - bw / 2, cy - bh / 2, bw, bh)
 
         p.end()
 
     def mousePressEvent(self, event):
         if event.button() != Qt.LeftButton or not self.button_rect:
             return
-        x,y,w,h = self.button_rect
+
+        x, y, w, h = self.button_rect
         pos = event.position()
-        if x <= pos.x() <= x+w and y <= pos.y() <= y+h:
+        if x <= pos.x() <= x + w and y <= pos.y() <= y + h:
             self.spin()
 
     def spin(self):
         if self.busy:
             return
+
         self.busy = True
         winner = random.randrange(4)
         sector = 90.0
+
         # The pointer is at the top. Stop the selected sector at the pointer.
         current = self.angle % 360
         target = (270.0 - (winner + 0.5) * sector) % 360
@@ -103,8 +133,15 @@ class Roulette(QWidget):
 
     def finish(self, winner):
         self.busy = False
-        QMessageBox.information(self, "🎉 ПОЗДРАВЛЯЕМ!", f"Вам выпало:\n\n{PRIZES[winner]}")
+        QMessageBox.information(
+            self,
+            "🎉 ПОЗДРАВЛЯЕМ!",
+            f"Вам выпало:
+
+{PRIZES[winner]}",
+        )
         self.update()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
