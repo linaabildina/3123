@@ -1,7 +1,7 @@
 import sys, random
 from pathlib import Path
 from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, Signal, Property
-from PySide6.QtGui import QPainter, QPixmap, QTransform, QColor
+from PySide6.QtGui import QPainter, QPixmap, QTransform, QColor, QPolygonF
 from PySide6.QtWidgets import QApplication, QWidget, QMessageBox
 
 ROOT = Path(sys._MEIPASS) if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS") else Path(__file__).resolve().parent
@@ -22,7 +22,7 @@ class Roulette(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Perfect World — Колесо Фортуны")
+        self.setWindowTitle("Perfect World — Розыгрыш | Колесо Фортуны")
         self.setMinimumSize(1200, 675)
         self.resize(1672, 941)
         self.bg = QPixmap(str(BG))
@@ -55,6 +55,32 @@ class Roulette(QWidget):
             cx = self.width() * 0.494
             cy = self.height() * 0.505
             p.drawPixmap(int(cx - rotated.width() / 2), int(cy - rotated.height() / 2), rotated)
+
+            # Fixed pointer: it stays at the top while the wheel rotates underneath it.
+            pointer_x = int(cx)
+            pointer_y = int(cy - size / 2 - 8)
+            glow = QPolygonF([
+                (pointer_x, pointer_y - 8),
+                (pointer_x - 22, pointer_y - 42),
+                (pointer_x + 22, pointer_y - 42),
+            ])
+            p.setPen(Qt.NoPen)
+            p.setBrush(QColor(255, 70, 235, 80))
+            p.drawPolygon(glow)
+            pointer = QPolygonF([
+                (pointer_x, pointer_y + 10),
+                (pointer_x - 14, pointer_y - 18),
+                (pointer_x + 14, pointer_y - 18),
+            ])
+            p.setBrush(QColor("#ff4de8"))
+            p.drawPolygon(pointer)
+            p.setPen(QColor("#fff0ff"))
+            p.drawPolyline(QPolygonF([
+                (pointer_x, pointer_y + 10),
+                (pointer_x - 14, pointer_y - 18),
+                (pointer_x + 14, pointer_y - 18),
+                (pointer_x, pointer_y + 10),
+            ]))
 
         bw = self.width() * 0.30
         bh = self.height() * 0.10
