@@ -1,6 +1,6 @@
 import sys, random
 from pathlib import Path
-from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, Signal, Property
+from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, Signal, Property, QPointF
 from PySide6.QtGui import QPainter, QPixmap, QTransform, QColor, QPolygonF
 from PySide6.QtWidgets import QApplication, QWidget, QMessageBox
 
@@ -60,17 +60,17 @@ class Roulette(QWidget):
             pointer_x = int(cx)
             pointer_y = int(cy - size / 2 - 8)
             glow = QPolygonF([
-                (pointer_x, pointer_y - 8),
-                (pointer_x - 22, pointer_y - 42),
-                (pointer_x + 22, pointer_y - 42),
+                QPointF(pointer_x, pointer_y - 8),
+                QPointF(pointer_x - 22, pointer_y - 42),
+                QPointF(pointer_x + 22, pointer_y - 42),
             ])
             p.setPen(Qt.NoPen)
             p.setBrush(QColor(255, 70, 235, 80))
             p.drawPolygon(glow)
             pointer = QPolygonF([
-                (pointer_x, pointer_y + 10),
-                (pointer_x - 14, pointer_y - 18),
-                (pointer_x + 14, pointer_y - 18),
+                QPointF(pointer_x, pointer_y + 10),
+                QPointF(pointer_x - 14, pointer_y - 18),
+                QPointF(pointer_x + 14, pointer_y - 18),
             ])
             p.setBrush(QColor("#ff4de8"))
             p.drawPolygon(pointer)
